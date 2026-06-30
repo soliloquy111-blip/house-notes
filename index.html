@@ -177,7 +177,7 @@
   .detail-modal-close:hover{color:var(--ink);}
   .detail-notes{
     margin-top:12px;padding-top:10px;border-top:1px dashed var(--paper-line);
-    font-family:"Noto Sans TC",sans-serif;font-size:14px;color:var(--ink-soft);line-height:1.6;
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;color:var(--ink-soft);line-height:1.6;
   }
   .summary-table tr.row-link td:first-child{
     position:relative;
@@ -209,23 +209,24 @@
     color:var(--ink-soft);letter-spacing:.04em;padding:14px 16px 0;
   }
   .summary-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .summary-table{width:100%;min-width:560px;border-collapse:collapse;font-family:"Noto Sans TC",sans-serif;}
-  .summary-table th{
-    text-align:left;font-size:16px;color:var(--ink-soft);font-weight:700;
-    padding:12px 12px 10px;border-bottom:1.5px solid var(--ink);white-space:nowrap;
+  .summary-list{display:flex;flex-direction:column;}
+  .summary-row{
+    display:block;padding:14px 16px;border-bottom:1px solid var(--paper-line);
+    cursor:pointer;font-family:"Noto Sans TC",sans-serif;
   }
-  .summary-table td{
-    padding:14px 12px;font-size:17px;border-bottom:1px solid var(--paper-line);
-    vertical-align:middle;white-space:nowrap;
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row:active{background:var(--paper);}
+  .summary-row-line1{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
   }
-  .summary-table tr:last-child td{border-bottom:none;}
-  .summary-table tr.row-link{cursor:pointer;}
-  .summary-table tr.row-link:active{background:var(--paper);}
-  .summary-name{font-weight:700;}
-  .summary-table .num{white-space:nowrap;font-variant-numeric:tabular-nums;}
-  .summary-stars{color:var(--gold);font-size:16px;white-space:nowrap;}
+  .summary-row-name{font-weight:700;font-size:17px;color:var(--ink);}
+  .summary-row-line2{
+    margin-top:5px;font-size:16px;color:var(--ink-soft);
+    display:flex;flex-wrap:wrap;gap:4px 10px;
+  }
+  .summary-row-line2 b{color:var(--ink);font-weight:700;}
   .summary-status{
-    font-family:"Noto Sans TC",sans-serif;font-size:11px;font-weight:700;
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;font-weight:700;
     padding:2px 8px;border-radius:999px;white-space:nowrap;display:inline-block;
   }
   .summary-status.喜歡{background:#E4ECDF;color:var(--green);}
@@ -236,7 +237,7 @@
   /* tag-style pros/cons */
   .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .tag-chip{
-    font-family:"Noto Sans TC",sans-serif;font-size:13px;
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;
     padding:3px 10px;border-radius:999px;white-space:nowrap;
   }
   .tag-chip.p{background:#E4ECDF;color:var(--green);}
@@ -815,26 +816,23 @@ function render(){
   } else {
     empty.style.display = 'none';
     summaryWrap.innerHTML = `
-      <div class="summary-title">比較總表 ・ 依單坪價排序，點任一列看完整內容</div>
-      <div class="summary-scroll">
-      <table class="summary-table">
-        <thead><tr>
-          <th>物件</th><th>總價</th><th>單坪價</th><th>主建物坪</th><th>狀態</th>
-        </tr></thead>
-        <tbody>
+      <div class="summary-title">比較總表 ・ 依單坪價排序，點任一筆看完整內容</div>
+      <div class="summary-list">
           ${sortedForSummary.map(r => {
             const up = unitPrice(r.price, r.ping);
             return `
-            <tr class="row-link" data-jump="${r.id}">
-              <td class="summary-name">${escapeHtml(r.name||'未命名物件')}</td>
-              <td class="num">${r.price ? r.price+'萬' : '－'}</td>
-              <td class="num">${up ? up+'萬' : '－'}</td>
-              <td class="num">${r.mainPing ? r.mainPing : '－'}</td>
-              <td><span class="summary-status ${r.status}">${r.status}</span></td>
-            </tr>`;
+            <div class="summary-row" data-jump="${r.id}">
+              <div class="summary-row-line1">
+                <span class="summary-row-name">${escapeHtml(r.name||'未命名物件')}</span>
+                <span class="summary-status ${r.status}">${r.status}</span>
+              </div>
+              <div class="summary-row-line2">
+                <span>總價 <b>${r.price ? r.price+'萬' : '－'}</b></span>
+                <span>單坪 <b>${up ? up+'萬' : '－'}</b></span>
+                <span>主建物 <b>${r.mainPing ? r.mainPing+'坪' : '－'}</b></span>
+              </div>
+            </div>`;
           }).join('')}
-        </tbody>
-      </table>
       </div>
     `;
   }
@@ -845,7 +843,7 @@ function render(){
 }
 
 document.getElementById('summaryWrap').addEventListener('click', e => {
-  const row = e.target.closest('tr[data-jump]');
+  const row = e.target.closest('[data-jump]');
   if(!row) return;
   openDetail(row.dataset.jump);
 });
