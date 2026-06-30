@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>看房紀錄</title>
+<style>
+  :root{
+    --paper:#F3EFE6;
+    --paper-line:#DAD2BE;
+    --ink:#2B2A28;
+    --ink-soft:#6B6557;
+    --blue:#2F4A5C;
+    --blue-deep:#1C3140;
+    --terracotta:#B5573A;
+    --green:#5A7350;
+    --gold:#C49A4A;
+    --card:#FBF9F4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px);
+    background-size: 100% 36px;
+    color:var(--ink);
+    font-family: "Noto Serif TC","PingFang TC","Microsoft JhengHei",serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-wrap:break-word;
+    word-break:break-word;
+  }
+  html{overflow-x:hidden;}
+  .wrap{max-width:1100px;margin:0 auto;padding:40px 28px 80px;}
+
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:18px;margin-bottom:8px;
+    flex-wrap:wrap;gap:16px;
+  }
+  .title-block .eyebrow{
+    font-family:"Noto Sans TC",sans-serif;
+    letter-spacing:.18em;font-size:16px;color:var(--terracotta);
+    font-weight:700;margin-bottom:6px;
+  }
+  h1{margin:0;font-size:34px;letter-spacing:.02em;}
+  .subtitle{font-family:"Noto Sans TC",sans-serif;color:var(--ink-soft);font-size:16px;margin-top:6px;}
+  .stamp{
+    font-family:"Noto Sans TC",sans-serif;
+    border:2px solid var(--blue);color:var(--blue);
+    padding:6px 14px;border-radius:3px;font-size:16px;font-weight:700;
+    transform:rotate(-2deg);white-space:nowrap;
+  }
+
+  .toolbar{
+    display:flex;justify-content:space-between;align-items:center;
+    margin:22px 0 18px;flex-wrap:wrap;gap:12px;
+  }
+  .filters{display:flex;gap:8px;flex-wrap:wrap;font-family:"Noto Sans TC",sans-serif;}
+  .filters button{
+    background:none;border:1.5px solid var(--ink-soft);color:var(--ink-soft);
+    padding:6px 14px;border-radius:999px;font-size:16px;cursor:pointer;
+    font-family:"Noto Sans TC",sans-serif;
+  }
+  .filters button.active{background:var(--ink);color:var(--card);border-color:var(--ink);}
+
+  .btn-add{
+    background:var(--blue);color:#fff;border:none;
+    padding:10px 20px;border-radius:3px;cursor:pointer;
+    font-family:"Noto Sans TC",sans-serif;font-weight:700;font-size:16px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .btn-add:hover{background:var(--blue-deep);}
+
+  /* grid of cards */
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--paper-line);
+    border-left:5px solid var(--blue);
+    border-radius:2px;
+    padding:18px 18px 14px;
+    position:relative;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  .card.status-喜歡{border-left-color:var(--green);}
+  .card.status-刷掉{border-left-color:var(--terracotta); opacity:.6;}
+  .card.status-考慮中{border-left-color:var(--gold);}
+  .card.status-待看{border-left-color:var(--ink-soft);}
+
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+  .card-name{font-size:18px;font-weight:700;line-height:1.3;}
+  .card-addr{font-family:"Noto Sans TC",sans-serif;font-size:16px;color:var(--ink-soft);margin-top:3px;}
+
+  .status-tag{
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;font-weight:700;
+    padding:3px 9px;border-radius:999px;white-space:nowrap;
+  }
+  .status-tag.喜歡{background:#E4ECDF;color:var(--green);}
+  .status-tag.考慮中{background:#F4E9D2;color:#92742A;}
+  .status-tag.刷掉{background:#F2DFD8;color:var(--terracotta);}
+  .status-tag.待看{background:#E7E3D8;color:var(--ink-soft);}
+
+  .price-row{
+    margin-top:14px;display:flex;align-items:baseline;gap:8px;
+  }
+  .price-total{font-size:24px;font-weight:700;color:var(--blue-deep);font-family:"Noto Sans TC",sans-serif;}
+  .price-unit{font-family:"Noto Sans TC",sans-serif;font-size:16px;color:var(--ink-soft);}
+
+  .meta-row{
+    display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;color:var(--ink-soft);
+  }
+  .meta-row span b{color:var(--ink);font-weight:600;}
+
+  .type-tag{
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;font-weight:700;
+    color:var(--blue);border:1px solid var(--blue);border-radius:2px;
+    padding:1px 7px;margin-left:8px;letter-spacing:.04em;
+    white-space:nowrap;display:inline-block;
+  }
+
+  .score-row{margin-top:12px;font-size:18px;}
+  .stars{color:var(--gold);letter-spacing:1px;}
+
+  .pros-cons{font-family:"Noto Sans TC",sans-serif;font-size:16px;margin-top:10px;line-height:1.7;}
+  .pros-cons .p{color:var(--green);} .pros-cons .c{color:var(--terracotta);}
+
+  .spec-grid{
+    margin-top:10px;font-family:"Noto Sans TC",sans-serif;font-size:16px;
+    color:var(--ink-soft);display:grid;grid-template-columns:1fr 1fr;
+    gap:3px 14px;border-top:1px dashed var(--paper-line);padding-top:8px;
+  }
+  .spec-grid span b{color:var(--ink);font-weight:600;}
+
+  .card-actions{
+    margin-top:14px;padding-top:10px;border-top:1px dashed var(--paper-line);
+    display:flex;justify-content:flex-end;gap:14px;
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;
+  }
+  .card-actions a{color:var(--ink-soft);cursor:pointer;text-decoration:none;}
+  .card-actions a:hover{color:var(--blue);text-decoration:underline;}
+
+  .empty{
+    text-align:center;padding:60px 20px;color:var(--ink-soft);
+    font-family:"Noto Sans TC",sans-serif;
+  }
+  .empty b{display:block;font-family:"Noto Serif TC",serif;font-size:20px;color:var(--ink);margin-bottom:6px;}
+
+  /* modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(28,49,64,.45);
+    display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--card);max-width:560px;width:100%;
+    max-height:90vh;overflow-y:auto;
+    border-radius:4px;padding:28px 28px 22px;
+    font-family:"Noto Sans TC",sans-serif;
+  }
+  .modal h2{font-family:"Noto Serif TC",serif;margin:0 0 18px;font-size:20px;}
+
+  .detail-modal{
+    background:var(--card);max-width:480px;width:100%;
+    max-height:88vh;overflow-y:auto;border-radius:4px;
+    padding:24px 22px 22px;font-family:"Noto Serif TC",serif;
+    position:relative;border-left:5px solid var(--blue);
+  }
+  .detail-modal-close{
+    position:absolute;top:14px;right:16px;font-size:18px;
+    color:var(--ink-soft);cursor:pointer;line-height:1;
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  }
+  .detail-modal-close:hover{color:var(--ink);}
+  .detail-notes{
+    margin-top:12px;padding-top:10px;border-top:1px dashed var(--paper-line);
+    font-family:"Noto Sans TC",sans-serif;font-size:14px;color:var(--ink-soft);line-height:1.6;
+  }
+  .summary-table tr.row-link td:first-child{
+    position:relative;
+  }
+  .summary-table tr.row-link:hover{background:var(--paper);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:16px;color:var(--ink-soft);margin-bottom:5px;font-weight:700;}
+  .field input,.field select,.field textarea{
+    width:100%;padding:9px 10px;border:1px solid var(--paper-line);border-radius:3px;
+    font-family:inherit;font-size:16px;background:#fff;color:var(--ink);
+  }
+  .field textarea{resize:vertical;min-height:54px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal-actions{display:flex;justify-content:space-between;align-items:center;margin-top:20px;}
+  .star-pick{font-size:22px;color:#ccc;cursor:pointer;letter-spacing:2px;}
+  .star-pick span.on{color:var(--gold);}
+  .btn-save{background:var(--blue);color:#fff;border:none;padding:10px 22px;border-radius:3px;cursor:pointer;font-weight:700;}
+  .btn-cancel{background:none;border:none;color:var(--ink-soft);cursor:pointer;}
+
+  footer{margin-top:36px;text-align:center;font-family:"Noto Sans TC",sans-serif;font-size:16px;color:var(--ink-soft);}
+
+  /* summary comparison table */
+  #summaryWrap{
+    margin-bottom:24px;background:var(--card);border:1px solid var(--paper-line);
+    border-radius:3px;overflow:hidden;
+  }
+  .summary-title{
+    font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:700;
+    color:var(--ink-soft);letter-spacing:.06em;padding:12px 16px 0;
+  }
+  .summary-table{width:100%;border-collapse:collapse;font-family:"Noto Sans TC",sans-serif;}
+  .summary-table th{
+    text-align:left;font-size:13px;color:var(--ink-soft);font-weight:700;
+    padding:10px 10px 8px;border-bottom:1.5px solid var(--ink);white-space:nowrap;
+  }
+  .summary-table td{
+    padding:11px 10px;font-size:15px;border-bottom:1px solid var(--paper-line);
+    vertical-align:middle;
+  }
+  .summary-table tr:last-child td{border-bottom:none;}
+  .summary-table tr.row-link{cursor:pointer;}
+  .summary-table tr.row-link:active{background:var(--paper);}
+  .summary-name{font-weight:700;}
+  .summary-table .num{white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .summary-stars{color:var(--gold);font-size:13px;white-space:nowrap;}
+  .summary-status{
+    font-family:"Noto Sans TC",sans-serif;font-size:11px;font-weight:700;
+    padding:2px 8px;border-radius:999px;white-space:nowrap;display:inline-block;
+  }
+  .summary-status.喜歡{background:#E4ECDF;color:var(--green);}
+  .summary-status.考慮中{background:#F4E9D2;color:#92742A;}
+  .summary-status.刷掉{background:#F2DFD8;color:var(--terracotta);}
+  .summary-status.待看{background:#E7E3D8;color:var(--ink-soft);}
+
+  /* tag-style pros/cons */
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .tag-chip{
+    font-family:"Noto Sans TC",sans-serif;font-size:13px;
+    padding:3px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .tag-chip.p{background:#E4ECDF;color:var(--green);}
+  .tag-chip.c{background:#F2DFD8;color:var(--terracotta);}
+
+  @media (max-width: 400px){
+    .two-col{grid-template-columns:1fr;}
+    .spec-grid{grid-template-columns:1fr;}
+    .wrap{padding:24px 16px 60px;}
+    .modal{padding:22px 18px 18px;}
+    h1{font-size:28px;}
+    .card-actions{gap:18px;}
+    .summary-table th, .summary-table td{padding:8px 6px;font-size:13px;}
+    .summary-title{padding:10px 12px 0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title-block">
+      <div class="eyebrow">PROPERTY VIEWING LOG</div>
+      <h1>看房紀錄</h1>
+      <div class="subtitle">每一間都記下來，比較才有依據</div>
+    </div>
+    <div class="stamp" id="countStamp">尚未新增</div>
+  </header>
+
+  <div class="toolbar">
+    <div class="filters" id="filters">
+      <button data-f="all" class="active">全部</button>
+      <button data-f="待看">待看</button>
+      <button data-f="喜歡">喜歡</button>
+      <button data-f="考慮中">考慮中</button>
+      <button data-f="刷掉">刷掉</button>
+    </div>
+    <button class="btn-add" id="openAdd">＋ 新增看房紀錄</button>
+  </div>
+
+  <div id="summaryWrap"></div>
+  <div class="empty" id="emptyState" style="display:none;">
+    <b>還沒有任何紀錄</b>
+    看完一間房子，就趁印象還新鮮時記下來吧
+  </div>
+
+  <footer>資料儲存在你的帳號中，僅自己看得到</footer>
+</div>
+
+<div class="overlay" id="detailOverlay">
+  <div class="modal detail-modal">
+    <div class="detail-modal-close" id="detailCloseBtn">✕</div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">新增看房紀錄</h2>
+    <input type="hidden" id="recId">
+    <div class="field">
+      <label>物件名稱 / 社區</label>
+      <input id="f_name" placeholder="例：台北小日子 3 房">
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label>物件類型</label>
+        <select id="f_proptype">
+          <option value="">不指定</option>
+          <option value="預售屋">預售屋</option>
+          <option value="新成屋">新成屋</option>
+          <option value="中古屋">中古屋</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>地址</label>
+        <input id="f_addr" placeholder="例：台北市大安區◯◯路◯段">
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label>總價（萬）</label>
+        <input id="f_price" type="number" placeholder="1800">
+      </div>
+      <div class="field">
+        <label>坪數（含車位）</label>
+        <input id="f_ping" type="number" placeholder="32">
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label>主建物坪數</label>
+        <input id="f_mainping" type="number" placeholder="20.5">
+      </div>
+      <div class="field">
+        <label>屋齡（年，預售屋可留空）</label>
+        <input id="f_age" type="number" placeholder="15">
+      </div>
+    </div>
+    <div class="field">
+      <label>格局 / 戶型</label>
+      <input id="f_layout" placeholder="例：3房2廳2衛，約41坪">
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label>公設比</label>
+        <input id="f_publicratio" placeholder="例：33.8%">
+      </div>
+      <div class="field">
+        <label>車位價格</label>
+        <input id="f_parkingprice" placeholder="例：238-258萬，平面大車位">
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label>付款方式（預售屋適用）</label>
+        <input id="f_payment" placeholder="例：簽3%/工程12%/貸款75%/尾款5%">
+      </div>
+      <div class="field">
+        <label>交屋日期</label>
+        <input id="f_handover" placeholder="例：2027上半年">
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label>客變（預售屋適用）</label>
+        <input id="f_changeable" placeholder="例：可，施工進度三樓層前">
+      </div>
+      <div class="field">
+        <label>看房日期</label>
+        <input id="f_date" type="date">
+      </div>
+    </div>
+    <div class="field">
+      <label>狀態</label>
+      <select id="f_status">
+        <option value="待看">待看</option>
+        <option value="考慮中">考慮中</option>
+        <option value="喜歡">喜歡</option>
+        <option value="刷掉">刷掉</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>評分</label>
+      <div class="star-pick" id="starPick">★★★★★</div>
+    </div>
+    <div class="field">
+      <label>優點 ✅</label>
+      <textarea id="f_pros" placeholder="例：三面採光、衛浴開窗、近捷運、學區佳"></textarea>
+    </div>
+    <div class="field">
+      <label>缺點 / 疑慮 ⚠</label>
+      <textarea id="f_cons" placeholder="例：玄關放鞋區需規劃、主臥有樑柱、公設比偏高"></textarea>
+    </div>
+    <div class="field">
+      <label>其他備註</label>
+      <textarea id="f_notes" placeholder="仲介聯絡方式、議價空間、貸款試算等"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelBtn">取消</button>
+      <button class="btn-save" id="saveBtn">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let records = [];
+let currentFilter = 'all';
+let currentScore = 0;
+
+const SEED_RECORDS = [
+  {
+    id: 'seed-1',
+    name: '新大南青山 23樓 2+1房',
+    proptype: '中古屋',
+    addr: '桃園市大園區致遠街',
+    price: 2538,
+    ping: 42.03,
+    mainPing: 20.08,
+    age: 2.6,
+    layout: '原3房改2+1房車，2廳2衛',
+    publicRatio: '',
+    parkingPrice: '坡道平面固定車位（價格洽業務）',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '考慮中',
+    score: 0,
+    pros: '頂樓景觀戶、前後陽台設計、雙衛浴皆開窗、室內已裝潢可直接入住、一層四戶兩電梯社區單純、近青埔高鐵生活圈',
+    cons: '單價未公開需洽業務確認、頂樓需留意夏季西曬與防水保固狀況、3房改2房可能影響轉手時的主流買盤接受度、建議實際確認公設比細項',
+    notes: 'YC1886186，永慶不動產，富呈好室不動產有限公司'
+  },
+  {
+    id: 'seed-2',
+    name: '樺龍敘 9樓 3房',
+    proptype: '新成屋',
+    addr: '桃園市中壢區民權路四段',
+    price: 1998,
+    ping: 53.82,
+    mainPing: null,
+    age: 1.3,
+    layout: '3房2廳2衛',
+    publicRatio: '',
+    parkingPrice: '坡道平面車位200萬，已裝充電樁',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '考慮中',
+    score: 0,
+    pros: '三面採光、雙衛浴開窗、兩戶一梯（隱私度高、動線單純）、近青埔國中／健工',
+    cons: '戶數僅19戶，公共開銷分攤戶數少，管理費偏高（實際看房了解約6千多／月，網頁標示5,239元僅供參考）、總戶數少對未來社區基金與電梯維護成本是隱憂',
+    notes: '物件編號 5187RZ，信義房屋青埔高鐵店，原開價2200萬已降價約9.18%'
+  },
+  {
+    id: 'seed-3',
+    name: '桃大然 12樓 2+1房',
+    proptype: '中古屋',
+    addr: '桃園市大園區永園路二段',
+    price: 2498,
+    ping: 53.01,
+    mainPing: null,
+    age: 3,
+    layout: '2房2廳2衛（裝潢改為2+1房）',
+    publicRatio: '',
+    parkingPrice: '坡道平面固定車位（含於總價，車位約170萬）',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '考慮中',
+    score: 0,
+    pros: '社區品質佳、一層兩戶（隱私度高、動線單純）、公設完整（健身房、瑜珈教室、廚藝教室）、近全聯／新光影城／空橋連接華泰OUTLET及A18高鐵站',
+    cons: '室內格局部分不喜歡（裝潢後的2+1房動線可能不符需求）、周邊預計興建安置宅，需留意未來棟距、景觀、噪音變化、本案土地使用分區為甲種建築用地（甲建），建議確認對未來開發強度與環境的影響',
+    notes: 'UT1036441，有巢氏房屋青埔A18高鐵加盟店'
+  },
+  {
+    id: 'seed-4',
+    name: '國源可頌 32坪2房／46坪3房',
+    proptype: '新成屋',
+    addr: '桃園市桃園區小檜溪',
+    price: null,
+    ping: 32,
+    mainPing: null,
+    age: 1,
+    layout: 'A2/A5約32坪2房2衛(單面採光)；A1/A3/AA/A6約46坪3房2衛(三面採光)',
+    publicRatio: '33.7%',
+    parkingPrice: '200-240萬',
+    payment: '簽10%／備證5%／完稅5%／貸款75%／交屋款5%',
+    handover: '已成屋(2025年第二季交屋)',
+    changeable: '不可',
+    date: '',
+    status: '待看',
+    score: 0,
+    pros: '32坪戶型：大兩房格局、主臥可留更衣間、雙衛浴(公衛開窗)、工作陽台大且天井設計隱私高。46坪戶型：三面採光、公領域無走道格局、雙衛浴開窗、主臥衛浴四件式滿配、臥室床頭無樑柱',
+    cons: '32坪戶型單面採光、次臥有樑柱(不壓床頭但需修飾)、視野鄰近其他大樓；46坪戶型A3/A6第二次臥視野較侷限；早鳥價50-54萬/坪，總價未定需洽詢',
+    notes: '東門溪公園宅，一棟6戶2梯，81戶住家+7戶店面，地上15層地下3層，防水保固5年、結構保固15年，管理費暫定80元/坪'
+  },
+  {
+    id: 'seed-5',
+    name: '華固天圓 11樓 3房',
+    proptype: '中古屋',
+    addr: '桃園市中壢區領航北路二段',
+    price: 2388,
+    ping: 54.94,
+    mainPing: 26.57,
+    age: 11.2,
+    layout: '3房2廳2衛，邊間',
+    publicRatio: '',
+    parkingPrice: '坡道平面固定車位',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '刷掉',
+    score: 0,
+    pros: '華固建設口碑佳、邊間格局方正、對面青埔國中與全聯就學免接送、系統櫃齊全裝潢典雅可直接入住',
+    cons: '整間黑壓壓的感覺不太好（採光或室內色調偏暗）',
+    notes: 'YC1009982，永慶不動產青埔A19矽谷加盟店，誠昕不動產有限公司'
+  },
+  {
+    id: 'seed-6',
+    name: '皇普園首之道 3房',
+    proptype: '中古屋',
+    addr: '桃園市中壢區青商路',
+    price: null,
+    ping: null,
+    mainPing: null,
+    age: null,
+    layout: '3房，邊間，房間及廁所皆有窗',
+    publicRatio: '',
+    parkingPrice: '',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '刷掉',
+    score: 0,
+    pros: '一層六戶兩部電梯單純、緊鄰青園國中預定地(預計119年招生)、近國道1號及國道2號、步行至桃園高鐵站約13分鐘、有天然瓦斯',
+    cons: '區域不喜歡',
+    notes: 'YC1912383，永慶不動產'
+  },
+  {
+    id: 'seed-7',
+    name: '新潤明日朗朗 13樓 3房',
+    proptype: '中古屋',
+    addr: '桃園市中壢區永泰路',
+    price: 1980,
+    ping: 44.32,
+    mainPing: 19.86,
+    age: 6.2,
+    layout: '3房2廳2衛，邊間',
+    publicRatio: '',
+    parkingPrice: '含於總價(含車位8.516坪)',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '刷掉',
+    score: 0,
+    pros: '邊間雙面採光與前後陽台、樓下即兒十一公園、步行4分鐘到青埔國中、近全聯/7-11/健身工廠',
+    cons: '不喜歡社區、格局也不喜歡。同為新潤建設物件，建議實際看屋時留意是否有陽台外推(二工)問題',
+    notes: 'YC1838234，永慶不動產青埔IKEA加盟店，金賀成不動產有限公司'
+  },
+  {
+    id: 'seed-8',
+    name: '偉築新豐洲 6樓 3房',
+    proptype: '中古屋',
+    addr: '桃園市大園區青峰路二段',
+    price: 2490,
+    ping: 45.77,
+    mainPing: 23.04,
+    age: 3.3,
+    layout: '3房2廳2衛，格局方正',
+    publicRatio: '',
+    parkingPrice: '坡道平面固定車位(含於總價，含車位8.986坪)',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '考慮中',
+    score: 0,
+    pros: '格局方正動線佳、面前庭園永久棟距視野開闊、陽台空間充足、社區全天候物業管理、近橫山書法公園與青昇公園、步行高鐵850M、建材規格佳(TOTO衛浴、大同氣密窗、單層排氣系統)',
+    cons: '沒有放室外機的地方，需現場確認每個房間冷氣室外機如何配置，可能會壓縮陽台空間或需另外加裝外掛架',
+    notes: 'YC1614776，永慶不動產青埔IKEA加盟店，金賀成不動產有限公司，開價2580萬已降90萬'
+  },
+  {
+    id: 'seed-9',
+    name: '合雄天好韻 8樓 3房',
+    proptype: '中古屋',
+    addr: '桃園市中壢區永順街',
+    price: 2188,
+    ping: 49.58,
+    mainPing: 22.57,
+    age: 2.6,
+    layout: '3房2廳2衛，前後陽台衛浴開窗',
+    publicRatio: '',
+    parkingPrice: 'B1坡道平面固定車位(含於總價，含車位11.503坪)',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '刷掉',
+    score: 0,
+    pros: '步行約5分鐘青埔國中、全新未入住前後陽台衛浴開窗、面景觀有棟距、B1大車位、一層四戶24h警衛管理',
+    cons: '鄰居感覺雷、沒有裝潢、採光普通',
+    notes: 'YC1894589，永慶不動產青埔棒球場加盟店，誠軒不動產有限公司'
+  },
+  {
+    id: 'seed-10',
+    name: '新大南青山 7樓 3房',
+    proptype: '中古屋',
+    addr: '桃園市大園區致遠街',
+    price: 2280,
+    ping: 42.03,
+    mainPing: 20.08,
+    age: 2.6,
+    layout: '3房2廳2衛，戶戶邊間雙衛浴開窗',
+    publicRatio: '',
+    parkingPrice: '坡道平面固定車位(含車位售價200萬)',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '刷掉',
+    score: 0,
+    pros: '面對中庭花園棟距40米景觀好、青埔國小約3分鐘明星學區、站前廣場黃金地段',
+    cons: '沒有裝潢、偏貴、七樓採光普通',
+    notes: 'UT1036473，有巢氏房屋青埔A18高鐵加盟店，賀成交不動產股份有限公司。同社區另一戶見「新大南青山 23樓 2+1房」紀錄'
+  },
+  {
+    id: 'seed-11',
+    name: '冠德青璞匯 20樓 2+1房',
+    proptype: '中古屋',
+    addr: '桃園市中壢區高鐵南路二段',
+    price: 2450,
+    ping: 45.25,
+    mainPing: 18.67,
+    age: 7.1,
+    layout: '2房2廳1衛，內設夾層日式臥榻(裝潢改2+1房)',
+    publicRatio: '',
+    parkingPrice: '坡道平面固定車位(含於總價，含車位12.344坪)',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '刷掉',
+    score: 0,
+    pros: 'A19捷運共構宅出站即到家、下樓即家樂福、近青塘園(6.34公頃)、雙陽台規劃(景觀陽台+工作陽台)',
+    cons: '格局很怪、大樓的動線也超怪完全不行',
+    notes: 'YC0934795，永慶不動產青埔A19矽谷加盟店，誠昕不動產有限公司'
+  },
+  {
+    id: 'seed-12',
+    name: '晶采學 9樓 3房',
+    proptype: '中古屋',
+    addr: '桃園市中壢區永能路',
+    price: 2550,
+    ping: 46.49,
+    mainPing: 21.45,
+    age: 0.7,
+    layout: '3房2廳2衛，邊間',
+    publicRatio: '',
+    parkingPrice: '坡道平面固定車位(含車位售價210萬)',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '考慮中',
+    score: 0,
+    pros: '邊間無遮擋視野好、通風採光好、YKK氣密窗、公設完整(接待大廳/閱覽室/健身房/中庭花園)、近青塘園與青埔國中、步行約10分鐘A19體育園區捷運站',
+    cons: '寶佳系建商賣這麼貴，單坪約55萬偏高，地點好但價格需考量是否合理',
+    notes: 'UT1156638，有巢氏房屋青埔A18高鐵加盟店，賀成交不動產股份有限公司'
+  },
+  {
+    id: 'seed-13',
+    name: '太睿泰極 11樓 3房（已售出）',
+    proptype: '中古屋',
+    addr: '桃園市中壢區領航南路一段89號',
+    price: 2188,
+    ping: null,
+    mainPing: null,
+    age: 11,
+    layout: '3房1廳2衛，邊間，無餐廳，前後兩陽台',
+    publicRatio: '34%',
+    parkingPrice: '',
+    payment: '',
+    handover: '',
+    changeable: '',
+    date: '',
+    status: '喜歡',
+    score: 5,
+    pros: '社區品質感覺不錯、格局方正沒有走道浪費、邊間採光佳、近捷運A19桃園體育園區站、太睿建設口碑佳',
+    cons: '已售出，這間已無法追，留作後續比較其他物件的標準參考',
+    notes: '太睿建設興建，14層/地下2層，共80-81戶。開價2188萬。近年實價登錄行情約40-51萬/坪'
+  }
+];
+
+const NAME_OVERRIDES = {
+  'seed-1': '新大南青山 23樓 2+1房',
+  'seed-2': '樺龍敘 9樓 3房',
+  'seed-3': '桃大然 12樓 2+1房'
+};
+
+const SCORE_OVERRIDES = {
+  'seed-1': 4,
+  'seed-2': 3,
+  'seed-3': 3,
+  'seed-4': 3,
+  'seed-5': 2,
+  'seed-6': 2,
+  'seed-7': 2,
+  'seed-8': 4,
+  'seed-9': 2,
+  'seed-10': 2,
+  'seed-11': 2,
+  'seed-12': 4
+};
+
+const STATUS_OVERRIDES = {
+  'seed-8': '刷掉'
+};
+
+const DATA_OVERRIDES = {
+  'seed-1': { mainPing: 20.08 },
+  'seed-5': { mainPing: 26.57 },
+  'seed-7': { mainPing: 19.86 },
+  'seed-8': { mainPing: 23.04 },
+  'seed-9': { mainPing: 22.57 },
+  'seed-10': { mainPing: 20.08 },
+  'seed-11': { mainPing: 18.67 },
+  'seed-12': { mainPing: 21.45 },
+  'seed-13': {
+    name: '太睿泰極 11樓 3房（已售出）',
+    price: 2188,
+    layout: '3房1廳2衛，邊間，無餐廳，前後兩陽台',
+    cons: '已售出，這間已無法追，留作後續比較其他物件的標準參考',
+    notes: '太睿建設興建，14層/地下2層，共80-81戶。開價2188萬。近年實價登錄行情約40-51萬/坪'
+  }
+};
+
+async function loadRecords(){
+  try{
+    const res = await window.storage.get('viewing-records', false);
+    records = res ? JSON.parse(res.value) : [];
+    const existingIds = new Set(records.map(r => r.id));
+    const missingSeeds = SEED_RECORDS.filter(s => !existingIds.has(s.id));
+    let changed = false;
+    if(missingSeeds.length > 0){
+      records = [...records, ...missingSeeds];
+      changed = true;
+    }
+    records = records.map(r => {
+      let updated = r;
+      if(NAME_OVERRIDES[r.id] && updated.name !== NAME_OVERRIDES[r.id]){
+        changed = true;
+        updated = { ...updated, name: NAME_OVERRIDES[r.id] };
+      }
+      if(SCORE_OVERRIDES[r.id] !== undefined && updated.score !== SCORE_OVERRIDES[r.id]){
+        changed = true;
+        updated = { ...updated, score: SCORE_OVERRIDES[r.id] };
+      }
+      if(STATUS_OVERRIDES[r.id] && updated.status !== STATUS_OVERRIDES[r.id]){
+        changed = true;
+        updated = { ...updated, status: STATUS_OVERRIDES[r.id] };
+      }
+      if(DATA_OVERRIDES[r.id]){
+        const ov = DATA_OVERRIDES[r.id];
+        const needsUpdate = Object.keys(ov).some(k => updated[k] !== ov[k]);
+        if(needsUpdate){
+          changed = true;
+          updated = { ...updated, ...ov };
+        }
+      }
+      return updated;
+    });
+    if(changed){
+      await saveRecords();
+    }
+  }catch(e){
+    records = SEED_RECORDS;
+    try{ await saveRecords(); }catch(e2){}
+
+  }
+  render();
+}
+
+async function saveRecords(){
+  try{
+    await window.storage.set('viewing-records', JSON.stringify(records), false);
+  }catch(e){
+    console.error('儲存失敗', e);
+  }
+}
+
+function render(){
+  const empty = document.getElementById('emptyState');
+  const summaryWrap = document.getElementById('summaryWrap');
+  let list = records;
+  if(currentFilter !== 'all'){
+    list = records.filter(r => r.status === currentFilter);
+  }
+
+  // summary table sorted by unit price (cheapest first), blanks last
+  const sortedForSummary = [...list].sort((a,b) => {
+    const ua = unitPrice(a.price, a.ping);
+    const ub = unitPrice(b.price, b.ping);
+    if(ua === null && ub === null) return 0;
+    if(ua === null) return 1;
+    if(ub === null) return -1;
+    return parseFloat(ua) - parseFloat(ub);
+  });
+
+  if(sortedForSummary.length === 0){
+    summaryWrap.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    summaryWrap.innerHTML = `
+      <div class="summary-title">比較總表 ・ 依單坪價排序，點任一列看完整內容</div>
+      <table class="summary-table">
+        <thead><tr>
+          <th>物件</th><th>總價</th><th>單坪價</th><th>主建物坪</th><th>狀態</th>
+        </tr></thead>
+        <tbody>
+          ${sortedForSummary.map(r => {
+            const up = unitPrice(r.price, r.ping);
+            return `
+            <tr class="row-link" data-jump="${r.id}">
+              <td class="summary-name">${escapeHtml(r.name||'未命名物件')}</td>
+              <td class="num">${r.price ? r.price+'萬' : '－'}</td>
+              <td class="num">${up ? up+'萬' : '－'}</td>
+              <td class="num">${r.mainPing ? r.mainPing : '－'}</td>
+              <td><span class="summary-status ${r.status}">${r.status}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  document.getElementById('countStamp').textContent = records.length
+    ? `共 ${records.length} 間 ・ 喜歡 ${records.filter(r=>r.status==='喜歡').length}`
+    : '尚未新增';
+}
+
+document.getElementById('summaryWrap').addEventListener('click', e => {
+  const row = e.target.closest('tr[data-jump]');
+  if(!row) return;
+  openDetail(row.dataset.jump);
+});
+
+function openDetail(id){
+  const r = records.find(x => x.id === id);
+  if(!r) return;
+  document.getElementById('detailBody').innerHTML = cardBodyHtml(r, true);
+  document.getElementById('detailOverlay').classList.add('open');
+}
+function closeDetail(){
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+document.getElementById('detailOverlay').addEventListener('click', e => {
+  if(e.target.id === 'detailOverlay') closeDetail();
+});
+document.getElementById('detailCloseBtn').addEventListener('click', closeDetail);
+document.getElementById('detailBody').addEventListener('click', e => {
+  const a = e.target.closest('a[data-act]');
+  if(!a) return;
+  const id = a.dataset.id;
+  if(a.dataset.act === 'edit'){
+    closeDetail();
+    openModal(records.find(r => r.id === id));
+  } else if(a.dataset.act === 'del'){
+    if(confirm('確定要刪除這筆看房紀錄嗎？')){
+      records = records.filter(r => r.id !== id);
+      saveRecords();
+      render();
+      closeDetail();
+    }
+  }
+});
+
+function unitPrice(price, ping){
+  if(!price || !ping) return null;
+  return (price / ping).toFixed(1);
+}
+
+function cardBodyHtml(r, withActions){
+  const up = unitPrice(r.price, r.ping);
+  const stars = '★'.repeat(r.score||0) + '☆'.repeat(5-(r.score||0));
+  const splitTags = (text) => text ? text.split(/、|，|；/).map(t => t.trim()).filter(Boolean) : [];
+  const prosTags = splitTags(r.pros);
+  const consTags = splitTags(r.cons);
+
+  return `
+    <div class="card-top">
+      <div>
+        <div class="card-name">${escapeHtml(r.name||'未命名物件')}${r.proptype ? `<span class="type-tag">${r.proptype}</span>` : ''}</div>
+        <div class="card-addr">${escapeHtml(r.addr||'')}</div>
+      </div>
+      <span class="status-tag ${r.status}">${r.status}</span>
+    </div>
+    <div class="price-row">
+      <span class="price-total">${r.price ? r.price + ' 萬' : '－'}</span>
+      ${up ? `<span class="price-unit">約 ${up} 萬／坪</span>` : ''}
+    </div>
+    <div class="meta-row">
+      ${r.ping ? `<span>坪數 <b>${r.ping}</b></span>` : ''}
+      ${r.mainPing ? `<span>主建物 <b>${r.mainPing}</b> 坪</span>` : ''}
+      ${r.age ? `<span>屋齡 <b>${r.age}</b> 年</span>` : ''}
+      ${r.layout ? `<span>格局 <b>${escapeHtml(r.layout)}</b></span>` : ''}
+      ${r.date ? `<span>看房 <b>${r.date}</b></span>` : ''}
+    </div>
+    <div class="score-row"><span class="stars">${stars}</span></div>
+    ${prosTags.length ? `<div class="tag-row">${prosTags.map(t => `<span class="tag-chip p">✓ ${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+    ${consTags.length ? `<div class="tag-row">${consTags.map(t => `<span class="tag-chip c">! ${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+    ${(r.publicRatio || r.parkingPrice || r.payment || r.handover || r.changeable) ? `
+    <div class="spec-grid">
+      ${r.publicRatio ? `<span>公設比 <b>${escapeHtml(r.publicRatio)}</b></span>` : ''}
+      ${r.parkingPrice ? `<span>車位 <b>${escapeHtml(r.parkingPrice)}</b></span>` : ''}
+      ${r.payment ? `<span>付款方式 <b>${escapeHtml(r.payment)}</b></span>` : ''}
+      ${r.handover ? `<span>交屋 <b>${escapeHtml(r.handover)}</b></span>` : ''}
+      ${r.changeable ? `<span>客變 <b>${escapeHtml(r.changeable)}</b></span>` : ''}
+    </div>` : ''}
+    ${r.notes ? `<div class="detail-notes">${escapeHtml(r.notes)}</div>` : ''}
+    ${withActions ? `
+    <div class="card-actions">
+      <a data-act="edit" data-id="${r.id}">編輯</a>
+      <a data-act="del" data-id="${r.id}">刪除</a>
+    </div>` : ''}
+  `;
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  document.querySelectorAll('#filters button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.f;
+  render();
+});
+
+const overlay = document.getElementById('overlay');
+document.getElementById('openAdd').addEventListener('click', () => openModal(null));
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if(e.target === overlay) closeModal(); });
+
+function openModal(record){
+  document.getElementById('modalTitle').textContent = record ? '編輯看房紀錄' : '新增看房紀錄';
+  document.getElementById('recId').value = record ? record.id : '';
+  document.getElementById('f_name').value = record?.name || '';
+  document.getElementById('f_proptype').value = record?.proptype || '';
+  document.getElementById('f_addr').value = record?.addr || '';
+  document.getElementById('f_price').value = record?.price || '';
+  document.getElementById('f_ping').value = record?.ping || '';
+  document.getElementById('f_mainping').value = record?.mainPing || '';
+  document.getElementById('f_age').value = record?.age || '';
+  document.getElementById('f_layout').value = record?.layout || '';
+  document.getElementById('f_publicratio').value = record?.publicRatio || '';
+  document.getElementById('f_parkingprice').value = record?.parkingPrice || '';
+  document.getElementById('f_payment').value = record?.payment || '';
+  document.getElementById('f_handover').value = record?.handover || '';
+  document.getElementById('f_changeable').value = record?.changeable || '';
+  document.getElementById('f_date').value = record?.date || '';
+  document.getElementById('f_status').value = record?.status || '待看';
+  document.getElementById('f_pros').value = record?.pros || '';
+  document.getElementById('f_cons').value = record?.cons || '';
+  document.getElementById('f_notes').value = record?.notes || '';
+  currentScore = record?.score || 0;
+  renderStars();
+  overlay.classList.add('open');
+}
+function closeModal(){ overlay.classList.remove('open'); }
+
+function renderStars(){
+  const el = document.getElementById('starPick');
+  el.innerHTML = '';
+  for(let i=1;i<=5;i++){
+    const s = document.createElement('span');
+    s.textContent = '★';
+    if(i <= currentScore) s.classList.add('on');
+    s.addEventListener('click', () => { currentScore = i; renderStars(); });
+    el.appendChild(s);
+  }
+}
+renderStars();
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const id = document.getElementById('recId').value;
+  const data = {
+    id: id || ('r' + Date.now()),
+    name: document.getElementById('f_name').value.trim(),
+    proptype: document.getElementById('f_proptype').value,
+    addr: document.getElementById('f_addr').value.trim(),
+    price: parseFloat(document.getElementById('f_price').value) || null,
+    ping: parseFloat(document.getElementById('f_ping').value) || null,
+    mainPing: parseFloat(document.getElementById('f_mainping').value) || null,
+    age: parseFloat(document.getElementById('f_age').value) || null,
+    layout: document.getElementById('f_layout').value.trim(),
+    publicRatio: document.getElementById('f_publicratio').value.trim(),
+    parkingPrice: document.getElementById('f_parkingprice').value.trim(),
+    payment: document.getElementById('f_payment').value.trim(),
+    handover: document.getElementById('f_handover').value.trim(),
+    changeable: document.getElementById('f_changeable').value.trim(),
+    date: document.getElementById('f_date').value,
+    status: document.getElementById('f_status').value,
+    score: currentScore,
+    pros: document.getElementById('f_pros').value.trim(),
+    cons: document.getElementById('f_cons').value.trim(),
+    notes: document.getElementById('f_notes').value.trim(),
+  };
+  if(!data.name){
+    alert('請至少填寫物件名稱');
+    return;
+  }
+  if(id){
+    records = records.map(r => r.id === id ? data : r);
+  } else {
+    records.push(data);
+  }
+  saveRecords();
+  render();
+  closeModal();
+});
+
+loadRecords();
+</script>
+</body>
+</html>
