@@ -204,24 +204,25 @@
     border-radius:3px;overflow:hidden;
   }
   .summary-title{
-    font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:700;
-    color:var(--ink-soft);letter-spacing:.06em;padding:12px 16px 0;
+    font-family:"Noto Sans TC",sans-serif;font-size:16px;font-weight:700;
+    color:var(--ink-soft);letter-spacing:.04em;padding:14px 16px 0;
   }
-  .summary-table{width:100%;border-collapse:collapse;font-family:"Noto Sans TC",sans-serif;}
+  .summary-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .summary-table{width:100%;min-width:560px;border-collapse:collapse;font-family:"Noto Sans TC",sans-serif;}
   .summary-table th{
-    text-align:left;font-size:13px;color:var(--ink-soft);font-weight:700;
-    padding:10px 10px 8px;border-bottom:1.5px solid var(--ink);white-space:nowrap;
+    text-align:left;font-size:16px;color:var(--ink-soft);font-weight:700;
+    padding:12px 12px 10px;border-bottom:1.5px solid var(--ink);white-space:nowrap;
   }
   .summary-table td{
-    padding:11px 10px;font-size:15px;border-bottom:1px solid var(--paper-line);
-    vertical-align:middle;
+    padding:14px 12px;font-size:17px;border-bottom:1px solid var(--paper-line);
+    vertical-align:middle;white-space:nowrap;
   }
   .summary-table tr:last-child td{border-bottom:none;}
   .summary-table tr.row-link{cursor:pointer;}
   .summary-table tr.row-link:active{background:var(--paper);}
   .summary-name{font-weight:700;}
   .summary-table .num{white-space:nowrap;font-variant-numeric:tabular-nums;}
-  .summary-stars{color:var(--gold);font-size:13px;white-space:nowrap;}
+  .summary-stars{color:var(--gold);font-size:16px;white-space:nowrap;}
   .summary-status{
     font-family:"Noto Sans TC",sans-serif;font-size:11px;font-weight:700;
     padding:2px 8px;border-radius:999px;white-space:nowrap;display:inline-block;
@@ -247,8 +248,7 @@
     .modal{padding:22px 18px 18px;}
     h1{font-size:28px;}
     .card-actions{gap:18px;}
-    .summary-table th, .summary-table td{padding:8px 6px;font-size:13px;}
-    .summary-title{padding:10px 12px 0;}
+    .summary-title{padding:12px 12px 0;}
   }
 </style>
 </head>
@@ -815,6 +815,7 @@ function render(){
     empty.style.display = 'none';
     summaryWrap.innerHTML = `
       <div class="summary-title">比較總表 ・ 依單坪價排序，點任一列看完整內容</div>
+      <div class="summary-scroll">
       <table class="summary-table">
         <thead><tr>
           <th>物件</th><th>總價</th><th>單坪價</th><th>主建物坪</th><th>狀態</th>
@@ -833,6 +834,7 @@ function render(){
           }).join('')}
         </tbody>
       </table>
+      </div>
     `;
   }
 
